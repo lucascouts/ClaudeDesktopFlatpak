@@ -12,21 +12,46 @@ affiliated with or endorsed by Anthropic.
 
 Supported: `x86_64` and `aarch64`.
 
-## Build locally
+## Not on Flathub
+
+This package is **not published on Flathub** and installs from a locally built
+repo instead (below). Flathub declined it: the app needs host command spawning
+(`--talk-name=org.freedesktop.Flatpak`, for local MCP servers) and `--filesystem=home`
+(for Claude Code), and Flathub does not grant those sandbox holes to a
+closed-source, proprietary application. Removing them would pass review but
+break local MCP servers and Claude Code, which are the point of the package.
+For a distribution-agnostic option without the sandbox, use the
+[AppImage](https://github.com/lucascouts/ClaudeDesktopAppImage) instead.
+
+## Build and install
 
 ```bash
 flatpak install --user flathub org.flatpak.Builder
-flatpak run org.flatpak.Builder --force-clean --user --install --install-deps-from=flathub \
+
+# Build into a local repo (do not use --install: the extra-data unpack runs a
+# nested bwrap that fails where unprivileged user namespaces are restricted).
+flatpak run org.flatpak.Builder --force-clean --user --repo=repo \
     builddir io.github.lucascouts.ClaudeDesktopFlatpak.yml
+
+# Install from that repo and run.
+flatpak --user remote-add --no-gpg-verify --if-not-exists claude-local repo
+flatpak --user install claude-local io.github.lucascouts.ClaudeDesktopFlatpak
 flatpak run io.github.lucascouts.ClaudeDesktopFlatpak
 ```
 
-## Lint (Flathub requirements)
+To update, re-run the build with a newer `.deb` version in the manifest
+(`x-checker-data` in the manifest tracks upstream, but without Flathub's
+external-data-checker nothing bumps it automatically — edit the `extra-data`
+`url`/`sha256`/`size` and rebuild).
+
+## Lint
 
 ```bash
 flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest io.github.lucascouts.ClaudeDesktopFlatpak.yml
-flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
 ```
+
+The two `finish-args` findings (`--filesystem=home`, host `flatpak-spawn`) are
+intentional; see *Not on Flathub* above.
 
 ## Local MCP servers
 
@@ -53,13 +78,6 @@ Remote (HTTP/SSE) MCP servers work unchanged.
   inside Flatpak.
 - The Electron/Chromium sandbox is provided by
   [zypak](https://github.com/refi64/zypak) (no setuid helper in Flatpak).
-
-## Updates
-
-New releases are picked up automatically:
-[flatpak-external-data-checker](https://github.com/flathub-infra/flatpak-external-data-checker)
-polls `https://claude.ai/api/desktop/linux/{x64,arm64}/deb/latest`
-(see `x-checker-data` in the manifest) and opens update PRs.
 
 ## License
 
