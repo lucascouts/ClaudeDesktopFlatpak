@@ -1,0 +1,5 @@
+.epic/
+.flatpak-builder/
+builddir/
+repo/
+*.flatpak
