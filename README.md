@@ -48,6 +48,9 @@ ebuild in the [bentoo overlay](https://github.com/obentoo/bentoo), re-hashes bot
 `.deb`s and commits the new `extra-data` pins. To pick that up locally, `git pull`
 and re-run the build above.
 
+(GitHub pauses a schedule after 60 days without repository activity; each bump
+commit counts as activity, so only a two-month gap upstream would trip it.)
+
 Why the overlay and not Anthropic directly: `extra-data` requires an exact
 `sha256` and byte size, and the API that hands out the download URL
 (`claude.ai/api`) sits behind Cloudflare and rejects GitHub's runner IPs. The
