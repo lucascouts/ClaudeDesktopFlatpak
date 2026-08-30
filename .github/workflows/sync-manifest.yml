@@ -1,0 +1,61 @@
+name: Sync manifest
+
+on:
+  # Follows the bentoo overlay's app-misc/claude-desktop-bin ebuild. It is the
+  # source of truth because claude.ai/api is Cloudflare-gated against GitHub's
+  # datacenter IPs, while the overlay's autoupdate probes it from a residential
+  # IP and commits the result -- see ci/resolve-overlay-pin.sh.
+  schedule:
+    - cron: "47 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-manifest
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    # Never let a fork push to its own manifest under this name.
+    if: github.repository_owner == 'lucascouts'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: Repin extra-data to the overlay ebuild
+        id: bump
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          result="$(./ci/bump-manifest.sh)"
+          echo "$result"
+          if [[ "$result" == "unchanged" ]]; then
+            echo "changed=false" >>"$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >>"$GITHUB_OUTPUT"
+            echo "version=${result#changed }" >>"$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push
+        if: steps.bump.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add io.github.lucascouts.ClaudeDesktopFlatpak.yml \
+                  io.github.lucascouts.ClaudeDesktopFlatpak.metainfo.xml
+          git commit -m "chore: bump extra-data to $VERSION"
+          # The checkout keeps no credentials on disk, so the token is supplied
+          # only for this one push and never lands in .git/config.
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            "HEAD:${GITHUB_REF_NAME}"

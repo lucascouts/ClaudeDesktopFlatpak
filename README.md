@@ -39,10 +39,25 @@ flatpak --user install claude-local io.github.lucascouts.ClaudeDesktopFlatpak
 flatpak run io.github.lucascouts.ClaudeDesktopFlatpak
 ```
 
-To update, re-run the build with a newer `.deb` version in the manifest
-(`x-checker-data` in the manifest tracks upstream, but without Flathub's
-external-data-checker nothing bumps it automatically — edit the `extra-data`
-`url`/`sha256`/`size` and rebuild).
+## Updates
+
+The manifest keeps itself current: the **Sync manifest** workflow runs every six
+hours, follows the version pinned by the
+[`app-misc/claude-desktop-bin`](https://github.com/obentoo/bentoo/tree/master/app-misc/claude-desktop-bin)
+ebuild in the [bentoo overlay](https://github.com/obentoo/bentoo), re-hashes both
+`.deb`s and commits the new `extra-data` pins. To pick that up locally, `git pull`
+and re-run the build above.
+
+Why the overlay and not Anthropic directly: `extra-data` requires an exact
+`sha256` and byte size, and the API that hands out the download URL
+(`claude.ai/api`) sits behind Cloudflare and rejects GitHub's runner IPs. The
+overlay's autoupdate queries it from a residential IP and commits both the
+version and the build id, which CI reads back with an ordinary GitHub fetch —
+[`ci/resolve-overlay-pin.sh`](ci/resolve-overlay-pin.sh), then
+[`ci/bump-manifest.sh`](ci/bump-manifest.sh) does the hashing and the rewrite.
+
+`x-checker-data` stays in the manifest for Flathub's external-data-checker, but
+nothing runs it here — this package is not on Flathub.
 
 ## Lint
 
