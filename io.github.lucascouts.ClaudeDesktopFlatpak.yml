@@ -42,9 +42,9 @@ modules:
       - type: extra-data
         filename: claude.deb
         only-arches: [x86_64]
-        url: https://downloads.claude.ai/releases/linux/x64/2.110.0/Claude-dfb2ba67b0820f5151bf7275ed57996f9d54d34c.deb
-        sha256: f44cb8b52f6e9171ac2e67cbcc8070c4974a2f0a9b9f141b430b32b4ff541109
-        size: 172266756
+        url: https://downloads.claude.ai/releases/linux/x64/2.110.1/Claude-ae8d2a56ea6672d25fccdb5e8f575cd6515132e8.deb
+        sha256: 0a9b0ac5456451637d8068ed757db0335cb6c0f24375479e740f572dbf886466
+        size: 172437436
         x-checker-data:
           type: json
           url: https://claude.ai/api/desktop/linux/x64/deb/latest
@@ -53,9 +53,9 @@ modules:
       - type: extra-data
         filename: claude.deb
         only-arches: [aarch64]
-        url: https://downloads.claude.ai/releases/linux/arm64/2.110.0/Claude-dfb2ba67b0820f5151bf7275ed57996f9d54d34c.deb
-        sha256: de9f24034f33dcadc53bedee92da6604e2c9268497ebff5447fedc092c884e71
-        size: 166180684
+        url: https://downloads.claude.ai/releases/linux/arm64/2.110.1/Claude-ae8d2a56ea6672d25fccdb5e8f575cd6515132e8.deb
+        sha256: 2bbcd7bd9807417335290621d950f0b8a7b884e19724122bd4a6e40a63a81495
+        size: 166204920
         x-checker-data:
           type: json
           url: https://claude.ai/api/desktop/linux/arm64/deb/latest
